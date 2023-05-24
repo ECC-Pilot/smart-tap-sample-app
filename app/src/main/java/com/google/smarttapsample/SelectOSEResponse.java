@@ -46,6 +46,8 @@ class SelectOSEResponse {
     if (!status.startsWith("9")) {
       // Invalid status code
       // https://developers.google.com/wallet/smart-tap/reference/apdu-commands/status-words
+      // der link von googleis kaputt, da hab ichs gefunden:
+      // https://www.eftlab.com/knowledge-base/complete-list-of-apdu-responses
       throw new SmartTapException("Invalid status: " + status);
     }
 
