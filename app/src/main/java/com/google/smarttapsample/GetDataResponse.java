@@ -256,11 +256,16 @@ class GetDataResponse {
    * @param decrypted Decrypted record bundle payload
    */
   private void getDecryptedPayload(byte[] decrypted) throws FormatException {
+    byte[] ly = "ly".getBytes();
+    byte[] et = "et".getBytes();
+    byte[] gr = "gr".getBytes();
+
     // Convert to NDEF message
     NdefMessage decryptedPayload = new NdefMessage(decrypted);
 
+    NdefRecord[] records = decryptedPayload.getRecords();
     // Iterate over payload NDEF records
-    for (NdefRecord rec : decryptedPayload.getRecords()) {
+    for (NdefRecord rec : records) {
       // Check for `asv` type
       if (Arrays.equals(rec.getType(), new byte[]{(byte) 0x61, (byte) 0x73, (byte) 0x76})) {
         // Get the message payload
@@ -268,8 +273,10 @@ class GetDataResponse {
 
         // Iterate over service NDEF records
         for (NdefRecord serviceRecord : serviceNdefRecord.getRecords()) {
+          byte[] serviceType = serviceRecord.getType();
           // Check for `ly` type
-          if (Arrays.equals(serviceRecord.getType(), new byte[]{(byte) 0x6c, (byte) 0x79})) {
+//          if (Arrays.equals(serviceRecord.getType(), new byte[]{(byte) 0x6c, (byte) 0x79})) {
+          if (Arrays.equals(serviceType, ly)) {
             // Get the loyalty record payload
             NdefMessage loyaltyRecordPayload = new NdefMessage(serviceRecord.getPayload());
 
@@ -280,6 +287,35 @@ class GetDataResponse {
                 // Get the Smart Tap redemption value
                 decryptedSmartTapRedemptionValue = new String(
                     Arrays.copyOfRange(loyalty.getPayload(), 1, loyalty.getPayload().length));
+              }
+            }
+          } else if (Arrays.equals(serviceType, et)) {
+            System.out.println("evt");
+
+            NdefMessage loyaltyRecordPayload = new NdefMessage(serviceRecord.getPayload());
+
+            // Iterate over loyalty NDEF records
+            for (NdefRecord loyalty : loyaltyRecordPayload.getRecords()) {
+              // Check for `n` ID
+              if (Arrays.equals(loyalty.getId(), new byte[]{(byte) 0x6e})) {
+                // Get the Smart Tap redemption value
+                decryptedSmartTapRedemptionValue = new String(
+                        Arrays.copyOfRange(loyalty.getPayload(), 1, loyalty.getPayload().length));
+              }
+            }
+
+          } else if (Arrays.equals(serviceType, gr)){
+            System.out.println("ge");
+
+            NdefMessage loyaltyRecordPayload = new NdefMessage(serviceRecord.getPayload());
+
+            // Iterate over loyalty NDEF records
+            for (NdefRecord loyalty : loyaltyRecordPayload.getRecords()) {
+              // Check for `n` ID
+              if (Arrays.equals(loyalty.getId(), new byte[]{(byte) 0x6e})) {
+                // Get the Smart Tap redemption value
+                decryptedSmartTapRedemptionValue = new String(
+                        Arrays.copyOfRange(loyalty.getPayload(), 1, loyalty.getPayload().length));
               }
             }
           }
