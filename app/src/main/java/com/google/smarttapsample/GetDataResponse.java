@@ -372,7 +372,7 @@ class GetDataResponse {
     // Iterate over the payload records
     for (NdefRecord rec : records) {
       // Looking for `srs` type
-      if (Arrays.equals(rec.getType(), new byte[] { (byte) 0x73, (byte) 0x72, (byte) 0x73 })) {
+      if (Arrays.equals(rec.getType(), "srs".getBytes())) {  // new byte[] { (byte) 0x73, (byte) 0x72, (byte) 0x73 })) {
         serviceRequestRecord = rec;
       }
     }
