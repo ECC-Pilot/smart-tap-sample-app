@@ -50,14 +50,15 @@ class GetDataResponse {
   /**
    * Constructor for the class
    *
-   * @param response Byte array response
-   * @param mobileDeviceEphemeralPublicKey Mobile device ephemeral public key
-   * @param terminalEphemeralPrivateKey Terminal ephemeral private key
-   * @param terminalNonce Terminal nonce
-   * @param collectorId Collector ID
+   * @param response                             Byte array response
+   * @param mobileDeviceEphemeralPublicKey       Mobile device ephemeral public
+   *                                             key
+   * @param terminalEphemeralPrivateKey          Terminal ephemeral private key
+   * @param terminalNonce                        Terminal nonce
+   * @param collectorId                          Collector ID
    * @param terminalEphemeralPublicKeyCompressed Terminal ephemeral public key
-   * @param signedData Signed data
-   * @param mobileDeviceNonce Mobile device nonce
+   * @param signedData                           Signed data
+   * @param mobileDeviceNonce                    Mobile device nonce
    */
   GetDataResponse(
       byte[] response,
@@ -108,14 +109,15 @@ class GetDataResponse {
   /**
    * Get and decrypt the record bundle.
    *
-   * @param mobileDeviceEphemeralPublicKey Mobile device ephemeral public key
-   * @param terminalEphemeralPrivateKey Terminal ephemeral private key
-   * @param terminalNonce Terminal nonce
-   * @param mobileDeviceNonce Mobile device nonce
-   * @param collectorId Collector ID
+   * @param mobileDeviceEphemeralPublicKey       Mobile device ephemeral public
+   *                                             key
+   * @param terminalEphemeralPrivateKey          Terminal ephemeral private key
+   * @param terminalNonce                        Terminal nonce
+   * @param mobileDeviceNonce                    Mobile device nonce
+   * @param collectorId                          Collector ID
    * @param terminalEphemeralPublicKeyCompressed Terminal ephemeral public key
-   * @param signedData Signed data
-   * @param recordBundleRecord Record bundle NDEF record
+   * @param signedData                           Signed data
+   * @param recordBundleRecord                   Record bundle NDEF record
    * @return Byte array record bundle
    */
   private static byte[] decrypt(
@@ -178,15 +180,17 @@ class GetDataResponse {
   }
 
   /**
-   * Gets the shared key from the shared secret and mobile device ephemeral public key
+   * Gets the shared key from the shared secret and mobile device ephemeral public
+   * key
    *
-   * @param mobileDeviceEphemeralPublicKey Mobile device ephemeral public key
-   * @param terminalNonce Terminal nonce
-   * @param mobileDeviceNonce Mobile devices nonce
-   * @param collectorId Collector ID
+   * @param mobileDeviceEphemeralPublicKey       Mobile device ephemeral public
+   *                                             key
+   * @param terminalNonce                        Terminal nonce
+   * @param mobileDeviceNonce                    Mobile devices nonce
+   * @param collectorId                          Collector ID
    * @param terminalEphemeralPublicKeyCompressed Terminal ephemeral public key
-   * @param signedData Signed data
-   * @param sharedSecret Shared secret
+   * @param signedData                           Signed data
+   * @param sharedSecret                         Shared secret
    * @return Shared key in byte-array form
    */
   private static byte[] extractSharedKey(
@@ -218,13 +222,14 @@ class GetDataResponse {
   }
 
   /**
-   * Checks the hash in the `get smart tap data` command response to ensure it was not tampered
+   * Checks the hash in the `get smart tap data` command response to ensure it was
+   * not tampered
    * with
    *
    * @param encryptedPayload Encrypted payload
-   * @param hmacKey Hash key
-   * @param ivBytes Initialization vector (part of hash)
-   * @param ciphertext Ciphertext (part of hash)
+   * @param hmacKey          Hash key
+   * @param ivBytes          Initialization vector (part of hash)
+   * @param ciphertext       Ciphertext (part of hash)
    */
   private static void checkHmac(
       byte[] encryptedPayload, byte[] hmacKey, byte[] ivBytes, byte[] ciphertext)
@@ -256,66 +261,69 @@ class GetDataResponse {
    * @param decrypted Decrypted record bundle payload
    */
   private void getDecryptedPayload(byte[] decrypted) throws FormatException {
-    byte[] ly = "ly".getBytes();
-    byte[] et = "et".getBytes();
-    byte[] gr = "gr".getBytes();
-
     // Convert to NDEF message
     NdefMessage decryptedPayload = new NdefMessage(decrypted);
 
     NdefRecord[] records = decryptedPayload.getRecords();
     // Iterate over payload NDEF records
     for (NdefRecord rec : records) {
-      // Check for `asv` type
-      if (Arrays.equals(rec.getType(), new byte[]{(byte) 0x61, (byte) 0x73, (byte) 0x76})) {
+      if (Arrays.equals(rec.getType(), "asv".getBytes())) { // new byte[] { (byte) 0x61, (byte) 0x73, (byte) 0x76 })) {
         // Get the message payload
         NdefMessage serviceNdefRecord = new NdefMessage(rec.getPayload());
 
         // Iterate over service NDEF records
         for (NdefRecord serviceRecord : serviceNdefRecord.getRecords()) {
           byte[] serviceType = serviceRecord.getType();
-          // Check for `ly` type
-//          if (Arrays.equals(serviceRecord.getType(), new byte[]{(byte) 0x6c, (byte) 0x79})) {
-          if (Arrays.equals(serviceType, ly)) {
-            // Get the loyalty record payload
-            NdefMessage loyaltyRecordPayload = new NdefMessage(serviceRecord.getPayload());
+          if (Arrays.equals(serviceType, "ly".getBytes())) { // Loyalty Pass
+            // Get the record payload
+            NdefMessage recordPayload = new NdefMessage(serviceRecord.getPayload());
 
-            // Iterate over loyalty NDEF records
-            for (NdefRecord loyalty : loyaltyRecordPayload.getRecords()) {
+            // Iterate over NDEF records
+            for (NdefRecord record : recordPayload.getRecords()) {
               // Check for `n` ID
-              if (Arrays.equals(loyalty.getId(), new byte[]{(byte) 0x6e})) {
+              if (Arrays.equals(record.getType(), "oid".getBytes())) {
+                // how to output
+                oid = new String(Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
+              } else if (Arrays.equals(record.getId(), "n".getBytes())) { // new byte[] { (byte) 0x6e })) {
                 // Get the Smart Tap redemption value
                 decryptedSmartTapRedemptionValue = new String(
-                    Arrays.copyOfRange(loyalty.getPayload(), 1, loyalty.getPayload().length));
+                    Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
+              } else if (Arrays.equals(records.getId(), "tr1".getBytes())) {
+                // Track 1 of Mag-Stripe
+              } else if (Arrays.equals(records.getId(), "tr2".getBytes())) {
+                // Track 1 of Mag-Stripe
+              }
+
+            }
+          } else if (Arrays.equals(serviceType, "et".getBytes())) { // Event Ticket
+            System.out.println("Event Ticket");
+
+            NdefMessage recordPayload = new NdefMessage(serviceRecord.getPayload());
+
+            // Iterate over NDEF records
+            for (NdefRecord record : recordPayload.getRecords()) {
+              if (Arrays.equals(record.getType(), "oid".getBytes())) {
+                // how to output
+                oid = new String(Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
+              } else if (Arrays.equals(record.getId(), "n".getBytes())) { // Check for `n` ID
+                // Get the Smart Tap redemption value
+                decryptedSmartTapRedemptionValue = new String(
+                    Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
               }
             }
-          } else if (Arrays.equals(serviceType, et)) {
-            System.out.println("evt");
 
-            NdefMessage loyaltyRecordPayload = new NdefMessage(serviceRecord.getPayload());
+          } else if (Arrays.equals(serviceType, "gr".getBytes())) {
+            System.out.println("Generic Pass");
 
-            // Iterate over loyalty NDEF records
-            for (NdefRecord loyalty : loyaltyRecordPayload.getRecords()) {
+            NdefMessage recordPayload = new NdefMessage(serviceRecord.getPayload());
+
+            // Iterate over NDEF records
+            for (NdefRecord record : recordPayload.getRecords()) {
               // Check for `n` ID
-              if (Arrays.equals(loyalty.getId(), new byte[]{(byte) 0x6e})) {
+              if (Arrays.equals(record.getId(), new byte[] { (byte) 0x6e })) {
                 // Get the Smart Tap redemption value
                 decryptedSmartTapRedemptionValue = new String(
-                        Arrays.copyOfRange(loyalty.getPayload(), 1, loyalty.getPayload().length));
-              }
-            }
-
-          } else if (Arrays.equals(serviceType, gr)){
-            System.out.println("ge");
-
-            NdefMessage loyaltyRecordPayload = new NdefMessage(serviceRecord.getPayload());
-
-            // Iterate over loyalty NDEF records
-            for (NdefRecord loyalty : loyaltyRecordPayload.getRecords()) {
-              // Check for `n` ID
-              if (Arrays.equals(loyalty.getId(), new byte[]{(byte) 0x6e})) {
-                // Get the Smart Tap redemption value
-                decryptedSmartTapRedemptionValue = new String(
-                        Arrays.copyOfRange(loyalty.getPayload(), 1, loyalty.getPayload().length));
+                    Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
               }
             }
           }
@@ -340,7 +348,7 @@ class GetDataResponse {
     // Iterate over records in service request payload NDEF message
     for (NdefRecord rec : serviceRequestPayloadNdefMessage.getRecords()) {
       // Looking for `reb` type
-      if (Arrays.equals(rec.getType(), new byte[]{(byte) 0x72, (byte) 0x65, (byte) 0x62})) {
+      if (Arrays.equals(rec.getType(), new byte[] { (byte) 0x72, (byte) 0x65, (byte) 0x62 })) {
         // Found record bundle NDEF record
         return rec;
       }
@@ -364,7 +372,7 @@ class GetDataResponse {
     // Iterate over the payload records
     for (NdefRecord rec : records) {
       // Looking for `srs` type
-      if (Arrays.equals(rec.getType(), new byte[]{(byte) 0x73, (byte) 0x72, (byte) 0x73})) {
+      if (Arrays.equals(rec.getType(), new byte[] { (byte) 0x73, (byte) 0x72, (byte) 0x73 })) {
         serviceRequestRecord = rec;
       }
     }
