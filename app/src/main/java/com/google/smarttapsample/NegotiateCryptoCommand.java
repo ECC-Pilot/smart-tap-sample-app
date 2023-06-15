@@ -51,14 +51,15 @@ class NegotiateCryptoCommand {
   static final int COLLECTOR_ID_INT = 21553370;
   // Collector ID is hardcoded to `20180608` for this sample app
 //  static final byte[] COLLECTOR_ID = new byte[]{(byte) 0x01, (byte) 0x33, (byte) 0xEE, (byte) 0x80};
-  //21553370
-  static final byte[] COLLECTOR_ID = new byte[] {(byte)0x01, (byte)0x48, (byte)0xE0, (byte)0xda};
-  // Private key is hardcoded for this sample app
 //  private static final String LONG_TERM_PRIVATE_KEY = "-----BEGIN EC PRIVATE KEY-----\n"
 //      + "MHcCAQEEIIJtF+UHZ7FlsOTZ4zL40dHiAiQoT7Ta8eUKAyRucHl9oAoGCCqGSM49\n"
 //      + "AwEHoUQDQgAEchyXj869zfmKhRi9xP7f2AK07kEo4lE7ZlWTN14jh4YBTny+hRGR\n"
 //      + "XcUzevV9zSSPJlPHpqqu5pEwlv1xyFvE1w==\n"
 //      + "-----END EC PRIVATE KEY-----\n";
+
+  // our stuff
+  //21553370
+  static final byte[] COLLECTOR_ID = new byte[] {(byte)0x01, (byte)0x48, (byte)0xE0, (byte)0xda};
 
   private static final String LONG_TERM_PRIVATE_KEY = "-----BEGIN EC PRIVATE KEY-----\n" +
           "MHcCAQEEIFPK6EIPW62KHiILUqlZ7EsrBYt8BKlrDriUwglnnfcKoAoGCCqGSM49\n" +
