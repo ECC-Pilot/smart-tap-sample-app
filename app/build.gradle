@@ -24,8 +24,8 @@ android {
 
     defaultConfig {
         applicationId "com.google.smarttapsample"
-        minSdk 29
-        targetSdkVersion 33
+        minSdk 28
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
     }

@@ -355,7 +355,12 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     descriptiveText.append("\n----\nSent `get smart tap data` command...");
 
     // Decrypted smartTapRedemptionValue from the pass
-    descriptiveText.append("\nResponse parsed and decrypted, contents:\n  ");
+    descriptiveText.append("\nResponse parsed and decrypted:");
+    descriptiveText.append("\nPass Type:\n  ");
+    descriptiveText.append(getDataResponse.passType);
+    descriptiveText.append("\nObject ID:\n  ");
+    descriptiveText.append(getDataResponse.oid);
+    descriptiveText.append("\nContents:\n  ");
     descriptiveText.append(getDataResponse.decryptedSmartTapRedemptionValue);
 
     // End

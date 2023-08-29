@@ -46,6 +46,8 @@ import org.bouncycastle.crypto.params.HKDFParameters;
 class GetDataResponse {
 
   String decryptedSmartTapRedemptionValue;
+  String oid;
+  String passType;
 
   /**
    * Constructor for the class
@@ -254,8 +256,6 @@ class GetDataResponse {
   /**
    * Gets the payload from a decrypted record bundle payload
    *
-   * Looks for loyalty (`ly`) and a record id of (`n`)
-   *
    * https://developers.google.com/wallet/smart-tap/reference/ndef-records/service-object-records
    *
    * @param decrypted Decrypted record bundle payload
@@ -275,12 +275,13 @@ class GetDataResponse {
         for (NdefRecord serviceRecord : serviceNdefRecord.getRecords()) {
           byte[] serviceType = serviceRecord.getType();
           if (Arrays.equals(serviceType, "ly".getBytes())) { // Loyalty Pass
+            System.out.println("Loyalty Object");
+            passType = "Loyalty Object";
             // Get the record payload
             NdefMessage recordPayload = new NdefMessage(serviceRecord.getPayload());
 
             // Iterate over NDEF records
             for (NdefRecord record : recordPayload.getRecords()) {
-              // Check for `n` ID
               if (Arrays.equals(record.getType(), "oid".getBytes())) {
                 // how to output
                 oid = new String(Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
@@ -288,15 +289,16 @@ class GetDataResponse {
                 // Get the Smart Tap redemption value
                 decryptedSmartTapRedemptionValue = new String(
                     Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
-              } else if (Arrays.equals(records.getId(), "tr1".getBytes())) {
+              } else if (Arrays.equals(record.getId(), "tr1".getBytes())) {
                 // Track 1 of Mag-Stripe
-              } else if (Arrays.equals(records.getId(), "tr2".getBytes())) {
-                // Track 1 of Mag-Stripe
+              } else if (Arrays.equals(record.getId(), "tr2".getBytes())) {
+                // Track 2 of Mag-Stripe
               }
 
             }
           } else if (Arrays.equals(serviceType, "et".getBytes())) { // Event Ticket
             System.out.println("Event Ticket");
+            passType = "Event Ticket";
 
             NdefMessage recordPayload = new NdefMessage(serviceRecord.getPayload());
 
@@ -304,7 +306,8 @@ class GetDataResponse {
             for (NdefRecord record : recordPayload.getRecords()) {
               if (Arrays.equals(record.getType(), "oid".getBytes())) {
                 // how to output
-                oid = new String(Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
+                //oid = new String(Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
+                oid = record.toString();
               } else if (Arrays.equals(record.getId(), "n".getBytes())) { // Check for `n` ID
                 // Get the Smart Tap redemption value
                 decryptedSmartTapRedemptionValue = new String(
@@ -313,14 +316,14 @@ class GetDataResponse {
             }
 
           } else if (Arrays.equals(serviceType, "gr".getBytes())) {
-            System.out.println("Generic Pass");
+            System.out.println("Generic Object");
+            passType = "Generic Object";
 
             NdefMessage recordPayload = new NdefMessage(serviceRecord.getPayload());
 
             // Iterate over NDEF records
             for (NdefRecord record : recordPayload.getRecords()) {
-              // Check for `n` ID
-              if (Arrays.equals(record.getId(), new byte[] { (byte) 0x6e })) {
+              if (Arrays.equals(record.getId(), "n".getBytes())) {
                 // Get the Smart Tap redemption value
                 decryptedSmartTapRedemptionValue = new String(
                     Arrays.copyOfRange(record.getPayload(), 1, record.getPayload().length));
@@ -372,7 +375,7 @@ class GetDataResponse {
     // Iterate over the payload records
     for (NdefRecord rec : records) {
       // Looking for `srs` type
-      if (Arrays.equals(rec.getType(), "srs".getBytes())) {  // new byte[] { (byte) 0x73, (byte) 0x72, (byte) 0x73 })) {
+      if (Arrays.equals(rec.getType(), "srs".getBytes())) { // new byte[] { (byte) 0x73, (byte) 0x72, (byte) 0x73 })) {
         serviceRequestRecord = rec;
       }
     }
