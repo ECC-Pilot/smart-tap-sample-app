@@ -22,6 +22,8 @@ import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.bouncycastle.util.encoders.Hex;
@@ -341,9 +343,42 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         this.negotiateCryptoResponse.sequenceNumber + 1);
 
     byte[] response = isoDep.transceive(getDataCommand.commandToByteArray());
+    ByteArrayOutputStream payloadStream = new ByteArrayOutputStream();
+
+    descriptiveText.append("\n----\nSent `get smart tap data` command...\n\n");
+
+    // Extract status
+    String status = Utils.getStatus(response);
+    if (!status.startsWith("9")) {
+      // Invalid status code
+      // https://developers.google.com/wallet/smart-tap/reference/apdu-commands/status-words
+      throw new SmartTapException("Invalid status: " + status);
+    }
+
+    while (status.startsWith("9")) {
+      if (status.equals("9100")) {
+        payloadStream.write(Utils.extractPayload(response));
+        response = isoDep.transceive(new byte[]{
+                (byte) 0x90,
+                (byte) 0xC0,
+                (byte) 0x00,
+                (byte) 0x00
+        });
+        status = Utils.getStatus(response);
+      } else if (status.equals("9000")) {
+        payloadStream.write(Utils.extractPayload(response));
+        break;
+      } else {
+        descriptiveText.append("\n\nA Problematic Status: ");
+        descriptiveText.append(status);
+        descriptiveText.append("\n\n");
+      }
+    }
+
+    byte[] payload = payloadStream.toByteArray();
 
     GetDataResponse getDataResponse = new GetDataResponse(
-        response,
+        payload,
         negotiateCryptoResponse.mobileDeviceEphemeralPublicKey,
         negotiateCryptoCommand.terminalEphemeralPrivateKey,
         negotiateCryptoCommand.terminalNonce,
@@ -352,7 +387,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         negotiateCryptoCommand.signedData,
         selectSmartTapResponse.mobileDeviceNonce);
 
-    descriptiveText.append("\n----\nSent `get smart tap data` command...");
 
     // Decrypted smartTapRedemptionValue from the pass
     descriptiveText.append("\nResponse parsed and decrypted:");

@@ -52,7 +52,7 @@ class GetDataResponse {
   /**
    * Constructor for the class
    *
-   * @param response                             Byte array response
+   * @param payload                              Byte array payload
    * @param mobileDeviceEphemeralPublicKey       Mobile device ephemeral public
    *                                             key
    * @param terminalEphemeralPrivateKey          Terminal ephemeral private key
@@ -63,7 +63,7 @@ class GetDataResponse {
    * @param mobileDeviceNonce                    Mobile device nonce
    */
   GetDataResponse(
-      byte[] response,
+      byte[] payload,
       byte[] mobileDeviceEphemeralPublicKey,
       PrivateKey terminalEphemeralPrivateKey,
       byte[] terminalNonce,
@@ -74,17 +74,8 @@ class GetDataResponse {
       throws Exception {
 
     try {
-      // Extract status
-      String status = Utils.getStatus(response);
-
-      if (!status.startsWith("9")) {
-        // Invalid status code
-        // https://developers.google.com/wallet/smart-tap/reference/apdu-commands/status-words
-        throw new SmartTapException("Invalid status: " + status);
-      }
-
       // Extract the service request NDEF record
-      NdefRecord serviceRequestRecord = getServiceRequestRecord(Utils.extractPayload(response));
+      NdefRecord serviceRequestRecord = getServiceRequestRecord(payload);
 
       // Extract the record bundle NDEF record
       NdefRecord recordBundleRecord = getRecordBundleNdefRecord(serviceRequestRecord);
