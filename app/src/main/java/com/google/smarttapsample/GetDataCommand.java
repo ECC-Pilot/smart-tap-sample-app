@@ -32,11 +32,10 @@ class GetDataCommand {
       (byte) 0x00
   };
 
-  // Hardcoded for loyalty passes
+
   // https://developers.google.com/wallet/smart-tap/reference/apdu-commands/get-data#service_type_byte
-//  private static final byte SERVICE_TYPE = 0x03;
-  private static final byte SERVICE_TYPE = 0x00;    // this one accepts all card types
-//  private static final byte SERVICE_TYPE = 0x03;
+  private static final byte SERVICE_TYPE = 0x00;  // this one accepts all card types
+//  private static final byte SERVICE_TYPE = 0x03;  // Hardcoded for loyalty passes
 
   private NdefRecord serviceRequestRecord;
 
